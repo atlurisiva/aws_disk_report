@@ -1,0 +1,26 @@
+---
+- name: Run disk report on Linux instances
+  amazon.aws.aws_ssm_send_command:
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_creds.aws_access_key }}"
+    aws_secret_key: "{{ aws_creds.aws_secret_key }}"
+    aws_session_token: "{{ aws_creds.aws_session_token }}"
+    instance_ids: "{{ linux_instance_ids }}"
+    document_name: "AWS-RunShellScript"
+    parameters:
+      commands: ["df -h --output=source,fstype,size,used,avail,pcent,target"]
+  register: ssm_result_linux
+  when: linux_instance_ids | length > 0
+
+- name: Run disk report on Windows instances
+  amazon.aws.aws_ssm_send_command:
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_creds.aws_access_key }}"
+    aws_secret_key: "{{ aws_creds.aws_secret_key }}"
+    aws_session_token: "{{ aws_creds.aws_session_token }}"
+    instance_ids: "{{ windows_instance_ids }}"
+    document_name: "AWS-RunPowerShellScript"
+    parameters:
+      commands: ["Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name,Free,Used"]
+  register: ssm_result_windows
+  when: windows_instance_ids | length > 0

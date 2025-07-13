@@ -1,0 +1,13 @@
+all:
+  children:
+    accounts:
+      hosts:
+       account_a:
+          aws_role_arn: arn:aws:iam::222233334444:role/AnsibleCrossAccountRole
+          aws_region: us-east-1
+       account_b:
+          aws_role_arn: arn:aws:iam::555566667777:role/AnsibleCrossAccountRole
+          aws_region: eu-west-1
+       account_c:
+          aws_role_arn: arn:aws:iam::555566667777:role/AnsibleCrossAccountRole
+          aws_region: eu-west-1

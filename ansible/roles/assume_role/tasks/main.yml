@@ -1,0 +1,7 @@
+---
+- name: Assume target account role and set AWS credentials
+  amazon.aws.aws_config:
+    region: "{{ aws_region }}"
+    role_arn: "{{ aws_role_arn }}"
+    role_session_name: "ansible-session-{{ inventory_hostname }}"
+  register: aws_creds

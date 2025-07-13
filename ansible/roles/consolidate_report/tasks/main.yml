@@ -1,0 +1,20 @@
+- name: Collect all disk report rows from all hosts
+  set_fact:
+    all_rows: |
+      InstanceId,OS,Output
+      {% for host in groups['accounts'] %}
+      {{ hostvars[host].disk_report_rows | default('') }}
+      {% endfor %}
+
+- name: Write the consolidated report to disk
+  copy:
+    dest: "/tmp/disk_report_{{ timestamp }}.csv"
+    content: "{{ all_rows }}"
+
+- name: Upload consolidated report to S3
+  amazon.aws.aws_s3:
+    bucket: "{{ s3_bucket }}"
+    object: "reports/disk_report_{{ timestamp }}.csv"
+    src: "/tmp/disk_report_{{ timestamp }}.csv"
+    mode: put
+    region: "{{ s3_region }}"

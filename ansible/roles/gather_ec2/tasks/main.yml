@@ -1,0 +1,12 @@
+- name: Gather running EC2 instances
+  amazon.aws.ec2_instance_info:
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_creds.aws_access_key }}"
+    aws_secret_key: "{{ aws_creds.aws_secret_key }}"
+    aws_session_token: "{{ aws_creds.aws_session_token }}"
+  register: ec2_info
+
+- name: Separate Linux and Windows instances
+  set_fact:
+    linux_instance_ids: "{{ ec2_info.instances | selectattr('platform', 'undefined') | map(attribute='instance_id') | list }}"
+    windows_instance_ids: "{{ ec2_info.instances | selectattr('platform', 'defined') | selectattr('platform', 'equalto', 'windows') | map(attribute='instance_id') | list }}"

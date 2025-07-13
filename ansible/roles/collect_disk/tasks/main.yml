@@ -1,0 +1,35 @@
+- name: Wait for SSM command completion (Linux)
+  amazon.aws.aws_ssm_command_result:
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_creds.aws_access_key }}"
+    aws_secret_key: "{{ aws_creds.aws_secret_key }}"
+    aws_session_token: "{{ aws_creds.aws_session_token }}"
+    command_id: "{{ ssm_result_linux.command.command_id }}"
+    instance_id: "{{ item }}"
+    wait: true
+  loop: "{{ linux_instance_ids | default([]) }}"
+  register: ssm_outputs_linux
+  when: linux_instance_ids is defined and linux_instance_ids | length > 0
+
+- name: Wait for SSM command completion (Windows)
+  amazon.aws.aws_ssm_command_result:
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_creds.aws_access_key }}"
+    aws_secret_key: "{{ aws_creds.aws_secret_key }}"
+    aws_session_token: "{{ aws_creds.aws_session_token }}"
+    command_id: "{{ ssm_result_windows.command.command_id }}"
+    instance_id: "{{ item }}"
+    wait: true
+  loop: "{{ windows_instance_ids | default([]) }}"
+  register: ssm_outputs_windows
+  when: windows_instance_ids is defined and windows_instance_ids | length > 0
+
+- name: Set disk rows as host fact
+  set_fact:
+    disk_report_rows: >-
+      {%- for output in (ssm_outputs_linux.results | default([])) -%}
+      {{ output.instance_id }},Linux,{{ output.command_result.stdout | replace('\n', ' ') }}
+      {% endfor -%}
+      {%- for output in (ssm_outputs_windows.results | default([])) -%}
+      {{ output.instance_id }},Windows,{{ output.command_result.stdout | replace('\n', ' ') }}
+      {% endfor %}
